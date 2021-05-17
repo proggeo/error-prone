@@ -72,6 +72,7 @@ public final class UnusedMethod extends BugChecker implements CompilationUnitTre
   private static final String EXEMPT_PREFIX = "unused";
   private static final String JUNIT_PARAMS_VALUE = "value";
   private static final String JUNIT_PARAMS_ANNOTATION_TYPE = "junitparams.Parameters";
+  public static final String JUNIT5_METHOD_SOURCE_ANNOTATION_TYPE = "org.junit.jupiter.params.provider.MethodSource";
 
   private static final ImmutableSet<String> EXEMPTING_METHOD_ANNOTATIONS =
       ImmutableSet.of(
@@ -119,8 +120,9 @@ public final class UnusedMethod extends BugChecker implements CompilationUnitTre
 
       @Override
       public Void visitMethod(MethodTree tree, Void unused) {
-        if (hasJUnitParamsParametersForMethodAnnotation(tree.getModifiers().getAnnotations())) {
-          // Since this method uses @Parameters, there will be another method that appears to
+        if (hasJUnitParamsParametersForMethodAnnotation(tree.getModifiers().getAnnotations()) ||
+                hasJUnit5MethodSourceMethodAnnotation(tree.getModifiers().getAnnotations())) {
+          // Since this method uses @Parameters or @MethodSource, there will be another method that appears to
           // be unused. Don't warn about unusedMethods at all in this case.
           ignoreUnusedMethods.set(true);
         }
@@ -135,6 +137,22 @@ public final class UnusedMethod extends BugChecker implements CompilationUnitTre
           unusedMethods.put(getSymbol(tree), getCurrentPath());
         }
         return super.visitMethod(tree, unused);
+      }
+
+      private boolean hasJUnit5MethodSourceMethodAnnotation(
+              Collection<? extends AnnotationTree> annotations) {
+        for (AnnotationTree tree : annotations) {
+          JCAnnotation annotation = (JCAnnotation) tree;
+          if (annotation.getAnnotationType().type != null
+                  && annotation
+                  .getAnnotationType()
+                  .type
+                  .toString()
+                  .equals(JUNIT5_METHOD_SOURCE_ANNOTATION_TYPE)) {
+              return true;
+          }
+        }
+        return false;
       }
 
       private boolean hasJUnitParamsParametersForMethodAnnotation(

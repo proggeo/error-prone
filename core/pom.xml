@@ -132,6 +132,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>5.7.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <!-- Apache 2.0 -->
       <groupId>com.google.gwt</groupId>
       <artifactId>gwt-user</artifactId>
